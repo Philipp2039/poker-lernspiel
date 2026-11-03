@@ -210,7 +210,8 @@ input[type=range]{flex:1;min-width:140px;accent-color:var(--gold)}
 .modal.open .sheet{transform:none}
 .sheet h2{margin:0 0 6px;font-size:24px}
 .sheet h4{margin:18px 0 6px;font-size:15px}
-.sheet p,.sheet li{font-size:14.5px;line-height:1.65;color:#c9d3e6}
+.sheet .p{margin:10px 0}
+.sheet p,.sheet .p,.sheet li{font-size:14.5px;line-height:1.65;color:#c9d3e6}
 .sheet .x{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.05);cursor:pointer;font-size:18px}
 .slide{animation:slidein .35s ease}
 .tnav{display:flex;align-items:center;justify-content:space-between;margin-top:20px;gap:10px}
@@ -299,15 +300,110 @@ button,select,input{touch-action:manipulation}
   header{position:static}
   .table-wrap{max-width:calc((100vh - 40px)*16/11)}
 }
+
+/* ---------- Bildkarten ---------- */
+.front .pic{position:absolute;left:27%;right:5%;top:7%;bottom:5%}
+.front .pic svg{width:100%;height:100%;display:block}
+/* ---------- Rechenweg ---------- */
+.math{margin-top:10px;border-radius:10px;background:rgba(255,255,255,.04);padding:0 10px}
+.math summary{cursor:pointer;font-size:13px;font-weight:700;padding:9px 0;color:var(--gold);list-style:none}
+.math summary::-webkit-details-marker{display:none}
+.math summary::before{content:'▸ '}
+.math[open] summary::before{content:'▾ '}
+.mrows{padding:2px 0 10px;display:grid;gap:8px}
+.mrow{display:grid;grid-template-columns:120px 1fr;gap:10px;font-size:12.5px;line-height:1.5}
+.mk{font-weight:700;color:var(--text)}
+.mv{color:#c9d3e6}
+@media(max-width:600px){.mrow{grid-template-columns:1fr;gap:2px}}
+/* ---------- Rückblick ---------- */
+.rv-res{display:flex;gap:14px;align-items:center;background:rgba(255,255,255,.04);border-radius:14px;padding:12px 14px;margin:10px 0;font-size:14px;line-height:1.5}
+.rv-net{font-size:22px;font-weight:800;color:var(--muted);min-width:110px}
+.rv-res.win .rv-net{color:var(--green)}.rv-res.lose .rv-net{color:var(--red)}
+.rv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.rv-p{background:rgba(255,255,255,.04);border-radius:12px;padding:10px;font-size:12.5px;line-height:1.4;border:1px solid transparent}
+.rv-p.w{border-color:rgba(245,196,81,.5);background:rgba(245,196,81,.08)}
+.rv-n{font-weight:800;margin-bottom:6px}
+.rv-h{margin-top:6px}.rv-s{color:var(--muted);font-size:11.5px;margin-top:4px}
+.hyp .card{opacity:.45}
+.eqbars{display:grid;gap:6px;margin:8px 0}
+.eqrow{display:grid;grid-template-columns:88px 1fr 90px;gap:10px;align-items:center;font-size:13px}
+.eql{font-weight:700}.eqc{margin-top:2px}.eqc .mini{--cw:22px;gap:2px}
+.eqb{height:12px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}
+.eqb div{height:100%;background:linear-gradient(90deg,#ef5a5f,#f5c451 50%,#34c77b);background-size:300px 100%}
+.eqv{font-weight:800;text-align:right}.eqv small{display:block;font-weight:500;color:var(--muted);font-size:10.5px}
+.dec{border-radius:12px;padding:10px 12px;margin:8px 0;font-size:13px;line-height:1.5;background:rgba(255,255,255,.04);border-left:4px solid var(--green)}
+.dec.warn{border-color:var(--orange)}.dec.neutral{border-color:var(--blue)}
+.dec-h{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.dec-h b{font-size:14px}
+.dec-m{color:var(--muted);font-size:12px;margin:2px 0 4px}
+.rv-auto{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);margin-top:16px}
+.nextrow{display:flex;gap:8px}.nextrow .big{flex:1}.nextrow .ghost{padding:10px 14px;font-size:14px;white-space:nowrap}
+table.mt{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}
+table.mt th,table.mt td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+table.mt th{color:var(--muted);font-weight:600;font-size:12px}
+table.mt td b{color:var(--gold)}
+.formula{background:rgba(255,255,255,.05);border-radius:10px;padding:10px 12px;font-weight:700;margin:8px 0;font-size:14px;text-align:center}
+@media(max-width:600px){table.mt{font-size:12px}table.mt th,table.mt td{padding:5px 5px}.eqrow{grid-template-columns:70px 1fr 78px;gap:6px}}
 </style>
 </head>
 <body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <clipPath id="fc-clip"><rect x="1.5" y="1.5" width="57" height="81" rx="5"/></clipPath>
+    <symbol id="fc-K" viewBox="0 0 60 84"><g clip-path="url(#fc-clip)">
+      <rect x="0" y="0" width="60" height="84" fill="#fbf7ee"/>
+      <path d="M6 84 L11 56 Q30 46 49 56 L54 84 Z" fill="currentColor"/>
+      <path d="M23 84 L26 60 L30 66 L34 60 L37 84 Z" fill="#e3b53a" opacity=".9"/>
+      <rect x="25" y="44" width="10" height="11" fill="#f0c9a6"/>
+      <ellipse cx="30" cy="34" rx="10.5" ry="12.5" fill="#f5d3b3"/>
+      <path d="M19.5 36 Q20 52 30 54 Q40 52 40.5 36 Q35 42 30 41 Q25 42 19.5 36Z" fill="currentColor" opacity=".85"/>
+      <path d="M23 38 Q30 34 37 38 Q30 40.5 23 38Z" fill="currentColor"/>
+      <path d="M19.5 30 Q19 22 30 20 Q41 22 40.5 30 Q35 26 30 27 Q25 26 19.5 30Z" fill="currentColor" opacity=".85"/>
+      <circle cx="26" cy="32" r="1.3" fill="#1f2937"/><circle cx="34" cy="32" r="1.3" fill="#1f2937"/>
+      <path d="M18 22 L18 12 L24 18 L30 8 L36 18 L42 12 L42 22 Z" fill="#e3b53a" stroke="#9c7a1c" stroke-width="1"/>
+      <circle cx="30" cy="10" r="1.6" fill="#d6453f"/><circle cx="18.5" cy="13" r="1.3" fill="#2f6fe0"/><circle cx="41.5" cy="13" r="1.3" fill="#2f6fe0"/>
+      <rect x="47" y="50" width="2.4" height="28" rx="1" fill="#c9a227"/><circle cx="48.2" cy="49" r="3" fill="#e3b53a" stroke="#9c7a1c" stroke-width=".8"/>
+    </g><rect x="1.5" y="1.5" width="57" height="81" rx="5" fill="none" stroke="#c9a227" stroke-width="1.5"/></symbol>
+    <symbol id="fc-Q" viewBox="0 0 60 84"><g clip-path="url(#fc-clip)">
+      <rect x="0" y="0" width="60" height="84" fill="#fbf7ee"/>
+      <path d="M4 84 L11 56 Q30 46 49 56 L56 84 Z" fill="currentColor"/>
+      <path d="M30 57 L23 84 L37 84 Z" fill="#fbf7ee" opacity=".85"/>
+      <rect x="25" y="44" width="10" height="11" fill="#f0c9a6"/>
+      <path d="M17 32 Q16 18 30 17 Q44 18 43 32 L45 58 Q38 50 30 52 Q22 50 15 58 Z" fill="#3b2a1a"/>
+      <ellipse cx="30" cy="34" rx="10" ry="12" fill="#f5d3b3"/>
+      <path d="M20 29 Q22 20 30 20 Q38 20 40 29 Q35 24 30 25 Q25 24 20 29Z" fill="#3b2a1a"/>
+      <circle cx="26" cy="33" r="1.2" fill="#1f2937"/><circle cx="34" cy="33" r="1.2" fill="#1f2937"/>
+      <path d="M27 40 Q30 42.5 33 40" stroke="#c2555a" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <path d="M20 21 Q30 10 40 21 L39 17 L34 20 L30 12 L26 20 L21 17 Z" fill="#e3b53a" stroke="#9c7a1c" stroke-width=".9"/>
+      <circle cx="30" cy="12.5" r="1.5" fill="#d6453f"/>
+      <path d="M24 55 Q30 60 36 55" stroke="#e3b53a" stroke-width="1.4" fill="none"/>
+      <g transform="translate(48 54)"><rect x="-1" y="0" width="2" height="24" fill="#2f8a4a"/><circle cx="0" cy="-2" r="4.5" fill="#f3a5c0"/><circle cx="0" cy="-2" r="1.8" fill="#e3b53a"/></g>
+    </g><rect x="1.5" y="1.5" width="57" height="81" rx="5" fill="none" stroke="#c9a227" stroke-width="1.5"/></symbol>
+    <symbol id="fc-J" viewBox="0 0 60 84"><g clip-path="url(#fc-clip)">
+      <rect x="0" y="0" width="60" height="84" fill="#fbf7ee"/>
+      <path d="M8 84 L12 58 Q30 49 48 58 L52 84 Z" fill="currentColor"/>
+      <path d="M20 58 L30 67 L40 58 L30 54 Z" fill="#fbf7ee"/>
+      <rect x="25" y="45" width="10" height="11" fill="#f0c9a6"/>
+      <path d="M19 34 Q18 20 30 19 Q42 20 41 34 L41 41 Q37 30 30 31 Q23 30 19 41 Z" fill="#8a5a2b"/>
+      <ellipse cx="30" cy="35" rx="10" ry="12" fill="#f5d3b3"/>
+      <path d="M20 30 Q24 22 30 22 Q36 22 40 30 Q34 26 30 27 Q26 26 20 30Z" fill="#8a5a2b"/>
+      <circle cx="26" cy="34" r="1.2" fill="#1f2937"/><circle cx="34" cy="34" r="1.2" fill="#1f2937"/>
+      <path d="M27 41 Q30 43 33 41" stroke="#b5474d" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+      <path d="M15 25 Q30 7 46 23 Q40 18 30 19 Q20 18 15 25 Z" fill="currentColor"/>
+      <rect x="16.5" y="21.5" width="27.5" height="4" rx="2" fill="#e3b53a"/>
+      <path d="M42 20 Q50 7 55 11 Q53 20 44 24 Z" fill="#fbf7ee" stroke="#c9a227" stroke-width=".8"/>
+      <rect x="9" y="30" width="2" height="48" fill="#9c7a1c"/><path d="M6 30 L14 30 L10 21 Z" fill="#9aa3b2"/>
+    </g><rect x="1.5" y="1.5" width="57" height="81" rx="5" fill="none" stroke="#c9a227" stroke-width="1.5"/></symbol>
+  </defs>
+</svg>
 
 <header>
   <div class="brand"><div class="logo">♠</div><div>Poker Lernspiel<small>Texas Hold'em · mit Coach</small></div></div>
   <button class="hbtn" id="hTut">📖<span class="lbl"> Anleitung</span></button>
   <button class="hbtn" id="hRank">🏆<span class="lbl"> Hand-Rangfolge</span></button>
   <button class="hbtn" id="hGloss">🔤<span class="lbl"> Begriffe</span></button>
+  <button class="hbtn" id="hMath">🧮<span class="lbl"> Mathe</span></button>
   <select class="hbtn" id="hSpeed" title="Spielgeschwindigkeit">
     <option value="1.6">🐢 Langsam</option><option value="1">▶ Normal</option><option value="0.55">⚡ Schnell</option>
   </select>
@@ -355,7 +451,7 @@ button,select,input{touch-action:manipulation}
           <div class="ramt" id="raiseAmt">–</div>
         </div>
       </div>
-      <div id="nextArea" class="hidden"><button class="big" id="nextBtn">Nächste Hand ▶</button></div>
+      <div id="nextArea" class="hidden nextrow"><button class="ghost" id="reviewBtn">📋 Rückblick</button><button class="big" id="nextBtn">Nächste Hand ▶</button></div>
       <div class="explain" id="explain">Fahre mit der Maus über eine Taste, um zu sehen, was sie bedeutet.</div>
     </div>
   </section>
@@ -523,7 +619,7 @@ function applyPositions(){
 }
 
 const G={players:[],dealer:-1,board:[],deck:[],pot:0,currentBet:0,minRaise:20,sb:10,bb:20,handNo:0,stage:'',sbI:-1,bbI:-1,resolveHuman:null,revealed:false,handOver:false,stats:{won:0}};
-let settings={speed:1,sound:true,tips:true};
+let settings={speed:1,sound:true,tips:true,autoReview:true,mathOpen:false};
 try{Object.assign(settings,JSON.parse(localStorage.getItem('pokerLernSettings')||'{}'));}catch(e){}
 const saveSettings=()=>{try{localStorage.setItem('pokerLernSettings',JSON.stringify(settings));}catch(e){}};
 let ff=false;
@@ -566,7 +662,7 @@ function cardEl(c,up=false){
   const el=document.createElement('div');el.className='card'+(up?' up':'');
   if(c)el.dataset.id=cid(c);
   const red=c&&(c.s===1||c.s===2);
-  el.innerHTML=`<div class="inner"><div class="face front${red?' red':''}">${c?`<div class="tl">${RL[c.r]}<span>${SUIT_SYM[c.s]}</span></div><div class="mid">${SUIT_SYM[c.s]}</div>`:''}</div><div class="face back"></div></div>`;
+  el.innerHTML=`<div class="inner"><div class="face front${red?' red':''}">${c?`<div class="tl">${RL[c.r]}<span>${SUIT_SYM[c.s]}</span></div>${c.r>=11&&c.r<=13?`<div class="pic"><svg><use href="#fc-${RL[c.r]}"/></svg></div>`:`<div class="mid">${SUIT_SYM[c.s]}</div>`}`:''}</div><div class="face back"></div></div>`;
   return el;
 }
 const mini=cards=>{const w=document.createElement('span');w.className='mini';cards.forEach(c=>w.appendChild(cardEl(c,true)));return w.outerHTML;};
@@ -718,7 +814,7 @@ function renderHandBox(){
   tableEl.querySelectorAll('.card.hl').forEach(c=>c.classList.remove('hl'));
   if(!me.inHand){box.innerHTML='<h3><span class="dot"></span>Deine Hand</h3><p>Du spielst gerade nicht mit.</p>';return;}
   if(me.hand.length<2){box.innerHTML='<h3><span class="dot"></span>Deine Hand</h3><p>Karten werden ausgeteilt …</p>';return;}
-  if(me.folded){box.innerHTML=`<h3><span class="dot"></span>Deine Hand</h3><div>${mini(me.hand)}</div><p>Du bist ausgestiegen. Schau zu, wie die anderen spielen – beim Showdown siehst du, mit welchen Karten sie gesetzt haben. Das ist eine super Lernchance!</p>`;return;}
+  if(me.folded){box.innerHTML=`<h3><span class="dot"></span>Deine Hand</h3><div>${mini(me.hand)}</div><div class="p">Du bist ausgestiegen. Schau zu, wie die anderen spielen – beim Showdown siehst du, mit welchen Karten sie gesetzt haben. Das ist eine super Lernchance!</div>`;return;}
   let html='<h3><span class="dot"></span>Deine Hand</h3>';
   if(G.board.length===0){
     const s=startingInfo(me.hand);
@@ -728,7 +824,7 @@ function renderHandBox(){
     const ev=evaluate([...me.hand,...G.board]);
     const usesHole=ev.cards.some(c=>me.hand.includes(c));
     html+=`<div class="handname">${ev.name}</div><p style="margin-top:-4px"><b>${ev.desc}</b> – ${HAND_EXPLAIN[ev.cat9?9:ev.cat]}</p>
-      <div style="margin:8px 0">${mini(ev.cards)}</div><p class="note">Das sind deine besten 5 Karten aus deinen 2 + ${G.board.length} Tischkarten (am Tisch golden umrandet).</p>`;
+      <div style="margin:8px 0">${mini(ev.cards)}</div><div class="note">Das sind deine besten 5 Karten aus deinen 2 + ${G.board.length} Tischkarten (am Tisch golden umrandet).</div>`;
     if(!usesHole)html+=`<p>⚠️ <b>Achtung:</b> Deine beste Hand liegt komplett in der Mitte – die haben <b>alle</b> anderen auch! Gewinnen kannst du damit höchstens einen geteilten Pot.</p>`;
     else if(ev.cat===1&&me.hand[0].r===me.hand[1].r&&ev.cards[0].r>Math.max(...G.board.map(c=>c.r)))html+=`<p>💪 Dein Pocket Pair ist höher als jede Karte am Tisch – ein sogenanntes <b>Overpair</b>.</p>`;
     else if(ev.cat===1&&me.hand.some(c=>c.r===ev.cards[0].r)&&ev.cards[0].r===Math.max(...G.board.map(c=>c.r)))html+=`<p>👍 Du hast mit der höchsten Tischkarte ein Paar gebildet: <b>Top Pair</b>. Wichtig ist dann auch deine zweite Karte (Kicker): ${RN[me.hand.find(c=>c.r!==ev.cards[0].r)?.r||ev.cards[2].r]}.</p>`;
@@ -785,7 +881,8 @@ function renderOddsBox(myTurn){
       const map={fold:'#btnFold',call:'#btnCall',check:'#btnCall',raise:'#btnRaise'};
       $(map[r.k])?.classList.add('rec');
     }
-    html+=`<p class="note">Die Gewinnchance wird simuliert (${'2.200'} zufällige Spielverläufe). Echte Gegner haben keine zufälligen Karten – wer stark setzt, hat oft auch eine starke Hand.</p>`;
+    html+=mathBlock(me,eq,nOpp,toCall,pt);
+    html+=`<p class="note">Die Gewinnchance wird simuliert (2.200 zufällige Spielverläufe). Echte Gegner haben keine zufälligen Karten – wer stark setzt, hat oft auch eine starke Hand.</p>`;
     box.innerHTML=html;
     const ev=G.board.length?evaluate([...me.hand,...G.board]):null,s0=ev?null:startingInfo(me.hand);
     let m=`<span class="mc-h">${ev?ev.name:s0.code+' · '+s0.tier}</span><span class="mc-e">${pct(eq)} Gewinnchance</span>`;
@@ -816,9 +913,10 @@ async function startHand(){
   document.querySelectorAll('#board .slot').forEach(s=>s.innerHTML='');
   G.players.forEach((p,i)=>{
     $('#hole'+i).innerHTML='';$('#tag'+i).className='tag';$('#seat'+i).classList.remove('winner','turn','thinking');
-    Object.assign(p,{hand:[],bet:0,total:0,folded:false,allIn:false,acted:false,raises:0,inHand:p.chips>0});
+    Object.assign(p,{hand:[],bet:0,total:0,folded:false,allIn:false,acted:false,raises:0,inHand:p.chips>0,foldStage:null});
   });
   clearBubbles(false);
+  G.rec={dealt:G.players[0].inHand,startChips:G.players[0].chips,decisions:[],eq:{},boards:{},outcomes:[],bluffs:[],showdown:false};
   G.dealer=nextIdx(G.dealer,p=>p.inHand);
   const n=G.players.filter(p=>p.inHand).length;
   G.sbI=n===2?G.dealer:nextIdx(G.dealer,p=>p.inHand);
@@ -843,11 +941,11 @@ async function startHand(){
   await sleep(500);
   if(G.players[0].inHand){$('#hole0').querySelectorAll('.card').forEach(c=>c.classList.add('up'));sound('card');}
   await sleep(500);
-  updateCoach();
+  updateCoach();recordStreetEq('preflop');
 
   const streets=['preflop','flop','turn','river'];
   for(let si=0;si<4;si++){
-    if(si>0){setStage(streets[si]);await dealBoard(si===1?3:1,streets[si]);updateCoach();}
+    if(si>0){setStage(streets[si]);await dealBoard(si===1?3:1,streets[si]);updateCoach();recordStreetEq(streets[si]);}
     const ac=actors();
     if(ac.length>=2||(ac.length===1&&ac[0].bet<G.currentBet)){
       const first=si===0?nextIdx(G.bbI,canAct):nextIdx(G.dealer,canAct);
@@ -929,7 +1027,7 @@ async function applyAction(p,a){
   const i=idx(p),toCall=G.currentBet-p.bet;
   let kind=a.type,amt=0,to=0;
   if(kind==='fold'){
-    p.folded=true;sound('fold');
+    p.folded=true;p.foldStage=G.stage;sound('fold');
     const cards=[...$('#hole'+i).querySelectorAll('.card')];
     if(p.isHuman)cards.forEach(c=>c.classList.add('folded'));
     else{const pc=center($('#pot'));await Promise.all(cards.map(c=>{const b=center(c);return c.animate([{transform:'none',opacity:1},{transform:`translate(${(pc.x-b.x)*.4}px,${(pc.y-b.y)*.4}px) rotate(20deg) scale(.7)`,opacity:0}],{duration:400*SPD(),easing:'ease-in',fill:'forwards'}).finished;}));cards.forEach(c=>c.remove());}
@@ -939,6 +1037,7 @@ async function applyAction(p,a){
     if(to<=G.currentBet){kind=toCall>0?'call':'check';amt=Math.min(toCall,p.chips);if(amt)await putChips(p,amt);}
     else{const by=to-G.currentBet;if(by>=G.minRaise)G.minRaise=by;kind=G.currentBet===0?'bet':'raise';G.currentBet=to;amt=to-p.bet;await putChips(p,amt);}
   }
+  if(a.bluff)G.rec.bluffs.push({p,stage:G.stage});
   p.acted=true;
   const allIn=!p.folded&&p.chips===0;
   if(allIn)p.allIn=true;
@@ -1001,7 +1100,9 @@ function askHuman(p){
     updateCoach(true);
   });
 }
-function humanDo(a){if(!G.resolveHuman)return;const r=G.resolveHuman;G.resolveHuman=null;setControls(false);r(a);}
+function humanDo(a){if(!G.resolveHuman)return;const r=G.resolveHuman;G.resolveHuman=null;
+  try{const me=G.players[0],eq=myEquity(),toCall=Math.min(G.currentBet-me.bet,me.chips);G.rec.decisions.push({stage:G.stage,board:[...G.board],eq,toCall,pot:potTotal(),nOpp:alive().length-1,rec:recommendation(eq),a:{...a},chips:me.chips});}catch(e){}
+  setControls(false);r(a);}
 function raiseBounds(){
   const me=G.players[0],maxTo=me.bet+me.chips,minTo=Math.min(G.currentBet+G.minRaise,maxTo);
   return {minTo,maxTo,can:maxTo>G.currentBet&&actors().some(q=>q!==me)};
@@ -1077,12 +1178,13 @@ async function finishHand(){
     $('#seat'+idx(w)).classList.add('winner');sound('win');
     if(w.isHuman)G.stats.won++;
     showBanner(`${nm(w)} ${w.isHuman?'gewinnst':'gewinnt'} ${amt}!`);
+    G.rec.outcomes.push({label:'Pot',winners:[w],amount:amt,noShowdown:true});
     log(`🏆 <b>${nm(w)}</b> ${w.isHuman?'gewinnst':'gewinnt'} <b>${amt}</b> ohne Showdown.`,'Alle anderen sind ausgestiegen. Wer als Letzter übrig bleibt, gewinnt den Pot – und muss seine Karten nicht einmal zeigen. Genau so funktioniert ein erfolgreicher Bluff!','win');
   }else{
     setStage('showdown');
     if(!G.revealed){await revealCards();}
     await sleep(500);
-    const res=new Map();
+    const res=new Map();G.rec.res=res;G.rec.showdown=true;
     al.forEach(p=>{const ev=evaluate([...p.hand,...G.board]);res.set(p,ev);const t=$('#tag'+idx(p));t.textContent=ev.name;t.className='tag show';});
     log('Showdown!','Jetzt zählt nur noch, wer die beste 5-Karten-Hand hat.','street');
     al.forEach(p=>log(`<b>${nm(p)}</b>: ${mini(p.hand)} → <b>${res.get(p).name}</b> (${res.get(p).desc})`));
@@ -1094,7 +1196,7 @@ async function finishHand(){
       if(pot.elig.length===1){
         const p=pot.elig[0];
         await flyChips($('#pot .potchip'),$('#seat'+idx(p)+' .plate'),3);
-        p.chips+=pot.amount;renderAll();
+        p.chips+=pot.amount;renderAll();G.rec.outcomes.push({label,winners:[p],amount:pot.amount,returned:true});
         log(`<b>${nm(p)}</b> ${p.isHuman?'bekommst':'bekommt'} ${pot.amount} zurück.`,'Diesen Teil hat niemand mitgehen können (die anderen waren All-in mit weniger Chips). Nicht bezahlte Einsätze gehen an den Spieler zurück.');
         continue;
       }
@@ -1115,6 +1217,7 @@ async function finishHand(){
       if(winners.some(w=>w.isHuman))G.stats.won++;
       if(winners.length>1){
         showBanner(`Split Pot! ${winners.map(nm).join(' & ')} teilen ${pot.amount}`);
+        G.rec.outcomes.push({label,winners,amount:pot.amount,name:wev.name,desc:wev.desc,why:'Exakt gleich starke Hände – der Pot wird geteilt.'});
         log(`🤝 <b>${label}</b> (${pot.amount}) wird geteilt: ${winners.map(w=>`<b>${nm(w)}</b>`).join(' und ')} haben exakt gleich gute Hände (${wev.desc}).`,'Bei Gleichstand wird geteilt. Die Farbe (♠♥♦♣) spielt beim Poker für den Rang keine Rolle!','win');
       }else{
         const w=winners[0];
@@ -1128,6 +1231,7 @@ async function finishHand(){
           why=`Beide haben ${wev.name}. Dann entscheiden die Kartenwerte: `+(k<main?`${nm(w)} ${w.isHuman?'hast':'hat'} die höheren Hauptkarten (${RN[wc[k]]} gegen ${RN[lc[k]]}).`:`Die Hauptkarten sind gleich – also entscheidet die Beikarte, der <b>Kicker</b>: ${RN[wc[k]]} schlägt ${RN[lc[k]]}.`);
         }
         showBanner(`${nm(w)} ${w.isHuman?'gewinnst':'gewinnt'} ${pot.amount} mit ${wev.name}`);
+        G.rec.outcomes.push({label,winners:[w],amount:pot.amount,name:wev.name,desc:wev.desc,why});
         log(`🏆 <b>${nm(w)}</b> ${w.isHuman?'gewinnst':'gewinnt'} den ${label} (<b>${pot.amount}</b>) mit <b>${wev.desc}</b>.`,why,'win');
       }
       await sleep(1300);
@@ -1146,6 +1250,7 @@ async function finishHand(){
   $('#ctrlInfo').innerHTML='Die Hand ist vorbei. Schau dir in Ruhe an, was passiert ist – dann weiter!';
   $('#explain').innerHTML='Im <b>Spielverlauf</b> rechts steht genau, wer was gemacht hat und warum gewonnen wurde. Taste <b>Enter</b> startet die nächste Hand.';
   showArea('next');
+  if(G.rec.dealt&&settings.autoReview)setTimeout(()=>{if(G.handOver&&!$('#modal').classList.contains('open'))showReview();},1500);
 }
 
 /* =========================================================
@@ -1169,14 +1274,14 @@ const SLIDES=[
     <p>Gespielt wird mit <b>52 Karten</b>: 4 Farben mit je 13 Werten.</p>
     <p>Farben: ♠ Pik, ♥ Herz, ♦ Karo, ♣ Kreuz. <b>Alle Farben sind gleich viel wert</b> – sie zählen nur, wenn du 5 Karten einer Farbe hast (Flush).</p>
     <p>Werte von niedrig nach hoch:</p>
-    <p>${miniS('2c 3d 4h 5s 6c 7d 8h 9s Tc Jd Qh Ks Ac')}</p>
+    <div class="p">${miniS('2c 3d 4h 5s 6c 7d 8h 9s Tc Jd Qh Ks Ac')}</div>
     <p><b>J</b> = Bube (Jack), <b>Q</b> = Dame (Queen), <b>K</b> = König, <b>A</b> = Ass. Das Ass ist die höchste Karte – kann aber in einer Straße auch ganz unten stehen: A-2-3-4-5.</p>`,
   ()=>`<h2>Deine Hand ✋</h2>
     <p>Jeder bekommt <b>2 verdeckte Karten</b>, die nur er sieht. In der Mitte werden nach und nach <b>5 Gemeinschaftskarten</b> aufgedeckt, die <b>allen</b> gehören.</p>
     <p>Du bildest die <b>beste Hand aus 5 Karten</b> – aus deinen 2 und den 5 in der Mitte, also aus 7 Karten. Du kannst beide, nur eine oder sogar keine deiner eigenen Karten benutzen.</p>
     <h4>Beispiel</h4>
-    <p>Deine Karten: ${miniS('Kh Kd')} &nbsp; Mitte: ${miniS('Ks 7c 7h 2d 9s')}</p>
-    <p>Beste Hand: ${miniS('Kh Kd Ks 7c 7h')} = <b>Full House</b> (drei Könige + zwei Siebenen). Die 2 und die 9 zählen nicht mit.</p>`,
+    <div class="p">Deine Karten: ${miniS('Kh Kd')} &nbsp; Mitte: ${miniS('Ks 7c 7h 2d 9s')}</div>
+    <div class="p">Beste Hand: ${miniS('Kh Kd Ks 7c 7h')} = <b>Full House</b> (drei Könige + zwei Siebenen). Die 2 und die 9 zählen nicht mit.</div>`,
   ()=>`<h2>Ablauf einer Hand 🔄</h2>
     <div class="flow"><div><b>1. Blinds</b>Zwei Spieler zahlen Pflichteinsätze.</div><div><b>2. Preflop</b>Jeder bekommt 2 Karten. 1. Setzrunde.</div><div><b>3. Flop</b>3 Karten in die Mitte. 2. Setzrunde.</div><div><b>4. Turn</b>4. Karte. 3. Setzrunde.</div><div><b>5. River</b>5. Karte. Letzte Setzrunde.</div><div><b>6. Showdown</b>Karten zeigen, beste Hand gewinnt.</div></div>
     <p>In jeder <b>Setzrunde</b> ist reihum (im Uhrzeigersinn) jeder dran. Eine Runde endet, wenn alle, die noch dabei sind, <b>gleich viel gesetzt</b> haben.</p>
@@ -1211,7 +1316,7 @@ const SLIDES=[
       <li><b>Outs zählen.</b> Outs sind Karten, die deine Hand verbessern. Faustregel: Outs × 4 (am Flop) bzw. × 2 (am Turn) ≈ Trefferchance in %.</li>
       <li><b>Achte auf Stärke.</b> Wenn ein vorsichtiger Spieler plötzlich hoch erhöht, hat er meistens etwas.</li>
     </ol>
-    <p>Rechts siehst du immer den <b>Coach</b>: deine aktuelle Hand, deine Gewinnchance, eine Empfehlung und einen ausführlichen Spielverlauf. Viel Spaß! 🍀</p>`,
+    <p>Während des Spiels siehst du immer den <b>Coach</b>: deine Hand, deine Gewinnchance, eine Empfehlung – und unter „🧮 Rechenweg“ jede Zahl mit Rechnung. <b>Nach jeder Hand</b> öffnet sich ein <b>Rückblick</b>: alle Karten aufgedeckt, was wäre gewesen wenn, und wie gut deine Entscheidungen waren. Die Grundlagen stehen jederzeit unter „🧮 Mathe“. Viel Spaß! 🍀</p>`,
 ];
 let slideI=0;
 function showTutorial(i=0){
@@ -1298,6 +1403,8 @@ document.addEventListener('keydown',e=>{
 $('#hTut').onclick=()=>showTutorial(0);
 $('#hRank').onclick=showRanking;
 $('#hGloss').onclick=showGlossary;
+$('#hMath').onclick=showMath;
+$('#reviewBtn').onclick=showReview;
 $('#hNew').onclick=()=>{if(confirm('Wirklich ein neues Spiel starten? Der aktuelle Stand geht verloren.')){try{sessionStorage.setItem('pokerLernRestart','1');}catch(e){}location.reload();}};
 const spd=$('#hSpeed');spd.value=String(settings.speed);if(!spd.value){spd.value='1';settings.speed=1;}
 spd.onchange=()=>{settings.speed=+spd.value;saveSettings();};
@@ -1305,6 +1412,201 @@ const tips=$('#hTips');const syncTips=()=>tips.classList.toggle('on',settings.ti
 tips.onclick=()=>{settings.tips=!settings.tips;saveSettings();syncTips();if(G.resolveHuman)updateCoach(true);};
 const snd=$('#hSound');const syncSnd=()=>{snd.textContent=settings.sound?'🔊':'🔇';};syncSnd();
 snd.onclick=()=>{settings.sound=!settings.sound;saveSettings();syncSnd();};
+
+/* =========================================================
+   Mathe live, Rückblick & Mathe-Lexikon
+   ========================================================= */
+const pctDE=x=>((x*100).toFixed(x<0.1&&x>0?1:0)).replace('.',',')+' %';
+function outsInfo(hole,board){
+  if(board.length<3||board.length>4)return null;
+  const used=new Set([...hole,...board].map(cid)),cur=evaluate([...hole,...board]),outs=[];
+  for(const c of newDeck()){if(used.has(cid(c)))continue;const ev=evaluate([...hole,...board,c]),bev=evaluate([...board,c]);if(ev.cat>cur.cat&&bev.cat<ev.cat)outs.push(c);}
+  const u=52-2-board.length,o=outs.length,next=o/u,river=board.length===3?1-(1-o/47)*(1-o/46):next;
+  return {outs,u,o,next,river,cur};
+}
+function recordStreetEq(st){const me=G.players[0];if(!G.rec||!inHand(me))return;G.rec.eq[st]=myEquity();G.rec.boards[st]=[...G.board];}
+function completeBoard(){
+  const d=[...G.deck],b=[...G.board],pop=()=>d.pop();
+  if(b.length===0){pop();b.push(pop(),pop(),pop());}
+  if(b.length===3){pop();b.push(pop());}
+  if(b.length===4){pop();b.push(pop());}
+  return b;
+}
+function mathBlock(me,eq,nOpp,toCall,pt){
+  const rows=[];
+  if(G.board.length===0){
+    const [a,b]=me.hand,pair=a.r===b.r,suited=a.s===b.s;
+    rows.push(['Mögliche Starthände','1.326 verschiedene Kombinationen aus 52 Karten (52 × 51 ÷ 2).']);
+    rows.push([pair?'Genau dieses Paar':'Genau diese Hand',pair?'6 von 1.326 = <b>0,45 %</b>. Irgendein Paar bekommst du in 5,9 % der Hände.':suited?'4 von 1.326 = <b>0,3 %</b> (suited).':'12 von 1.326 = <b>0,9 %</b> (offsuit).']);
+    rows.push(pair?['Drilling am Flop','2 Karten deines Werts sind noch unter 50 unbekannten. Chance: <b>11,8 %</b>.']:['Paar am Flop','6 Karten passen zu deinen zwei Werten. Chance auf mindestens ein Paar: <b>32,4 %</b> – also meistens triffst du nichts.']);
+    if(suited)rows.push(['Flush bis zum River','<b>6,4 %</b> – deshalb ist „suited“ nur ein kleiner Bonus, kein Grund zum Spielen.']);
+    rows.push([`Gewinnchance ${pctDE(eq)}`,`So oft gewinnt deine Hand im Schnitt gegen ${nOpp} zufällige Hände, wenn alle bis zum Ende spielen. Fair wären ${pctDE(1/(nOpp+1))} (1 ÷ ${nOpp+1}).`]);
+  }else{
+    const oi=outsInfo(me.hand,G.board);
+    if(oi){
+      rows.push(['Unbekannte Karten',`52 − 2 (deine) − ${G.board.length} (Tisch) = <b>${oi.u}</b>. Die Karten der Gegner kennst du nicht – sie zählen als unbekannt.`]);
+      rows.push([`Outs: ${oi.o}`,oi.o?`Karten, die deine Hand verbessern: ${oi.outs.map(cardStr).join(' ')}`:'Keine Karte verbessert deine Hand-Kategorie. Du gewinnst nur, wenn die Gegner noch weniger haben.']);
+      if(oi.o){
+        rows.push(['Nächste Karte',`${oi.o} ÷ ${oi.u} = <b>${pctDE(oi.next)}</b>`]);
+        if(G.board.length===3)rows.push(['Bis zum River',`1 − (1 − ${oi.o}/47) × (1 − ${oi.o}/46) = <b>${pctDE(oi.river)}</b>. Faustregel: ${oi.o} × 4 = ${oi.o*4} %.`]);
+        else rows.push(['Faustregel',`${oi.o} × 2 = ${oi.o*2} % – fast genau der echte Wert.`]);
+      }
+    }
+    rows.push([`Gewinnchance ${pctDE(eq)}`,`Simulation: ${nOpp} Gegner bekommen zufällige Karten${G.board.length<5?', die restlichen Tischkarten werden ausgeteilt':''} – 2.200-mal. In ${pctDE(eq)} der Durchläufe hat deine Hand gewonnen.`]);
+  }
+  if(toCall>0){
+    const after=pt+toCall,po=toCall/after,ev=eq*after-toCall;
+    rows.push(['Pot Odds',`Du zahlst <b>${toCall}</b>, im Pot liegen danach <b>${after}</b>. ${toCall} ÷ ${after} = <b>${pctDE(po)}</b>. Von 100 solchen Situationen musst du mindestens ${Math.ceil(po*100)} gewinnen, sonst verlierst du auf Dauer.`]);
+    rows.push(['Erwartungswert (EV)',`${pctDE(eq)} × ${after} − ${toCall} = <b>${ev>=0?'+':''}${Math.round(ev)} Chips</b> pro Call im Durchschnitt. ${ev>=0?'Positiv: Auf lange Sicht verdienst du mit diesem Call – auch wenn du diesmal verlierst.':'Negativ: Auf lange Sicht kostet dich dieser Call Chips – auch wenn du diesmal gewinnst.'}`]);
+  }else{
+    rows.push(['Dein fairer Anteil',`${pctDE(eq)} × ${pt} im Pot = <b>${Math.round(eq*pt)} Chips</b> gehören dir „rechnerisch“. Liegt deine Chance über dem Durchschnitt, lohnt sich Setzen.`]);
+  }
+  return `<details class="math"${settings.mathOpen?' open':''} ontoggle="settings.mathOpen=this.open;saveSettings()"><summary>🧮 Rechenweg – warum diese Zahlen?</summary><div class="mrows">${rows.map(r=>`<div class="mrow"><div class="mk">${r[0]}</div><div class="mv">${r[1]}</div></div>`).join('')}</div></details>`;
+}
+
+function showReview(){
+  const R=G.rec,me=G.players[0];if(!R||!R.dealt||me.hand.length<2)return;
+  const pct=x=>Math.round(x*100)+' %';
+  const full=completeBoard(),hyp=full.slice(G.board.length);
+  const dealt=G.players.filter(p=>p.hand.length===2);
+  const fin=new Map();dealt.forEach(p=>fin.set(p,evaluate([...p.hand,...full])));
+  const bestScore=Math.max(...dealt.map(p=>fin.get(p).score));
+  const ghost=dealt.filter(p=>fin.get(p).score===bestScore);
+  const actualWinners=new Set();R.outcomes.filter(o=>!o.returned).forEach(o=>o.winners.forEach(w=>actualWinners.add(w)));
+  const net=me.chips-R.startChips;
+  const stName={preflop:'Preflop',flop:'Flop',turn:'Turn',river:'River',showdown:'Showdown'};
+  const boardHtml=`${mini(G.board)}${hyp.length?`<span class="hyp">${mini(hyp)}</span>`:''}`;
+
+  let html=`<h2>Rückblick: Hand #${G.handNo}</h2>`;
+  html+=`<div class="rv-res ${net>0?'win':net<0?'lose':''}"><div class="rv-net">${net>0?'+':''}${net} Chips</div><div>${R.outcomes.filter(o=>!o.returned).map(o=>`<b>${o.winners.map(nm).join(' & ')}</b> ${o.winners.length>1?'teilen':o.winners[0].isHuman?'gewinnst':'gewinnt'} ${o.amount}${o.name?` mit ${o.desc}`:' – alle anderen sind ausgestiegen'}${o.why?`<br><span class="note">${o.why}</span>`:''}`).join('<br>')}</div></div>`;
+
+  html+=`<h4>🔍 Alle Karten auf den Tisch (Lernmodus)</h4><div class="note" style="margin:6px 0 10px">Tisch: ${boardHtml}${hyp.length?' – die blassen Karten wären als Nächstes gekommen.':''}</div><div class="rv-grid">`;
+  dealt.forEach(p=>{const f=fin.get(p);const status=p.folded?`Fold am ${stName[p.foldStage]||'?'}`:(R.showdown?'Showdown':'Gewonnen ohne Showdown');
+    html+=`<div class="rv-p ${actualWinners.has(p)?'w':''}"><div class="rv-n">${actualWinners.has(p)?'🏆 ':''}${nm(p)}${ghost.includes(p)&&!actualWinners.has(p)?' 👻':''}</div>${mini(p.hand)}<div class="rv-h"><b>${f.name}</b><br><span class="note">${f.desc}</span></div><div class="rv-s">${status}</div></div>`;});
+  html+=`</div>`;
+  if(!ghost.every(p=>actualWinners.has(p))){const gm=ghost.some(p=>p.isHuman);html+=`<p>👻 <b>${ghost.map(nm).join(' & ')}</b> hätte${ghost.length>1?'n':gm?'st':''} mit allen fünf Tischkarten die beste Hand gehabt (${fin.get(ghost[0]).desc}) – ${gm?'du bist':'ist'} aber vorher ausgestiegen. ${gm?'Das passiert jedem: Ein Fold kann richtig sein, auch wenn die Karten später gepasst hätten – entscheidend ist, ob die Chance im Moment der Entscheidung gestimmt hat.':'Wer aussteigt, kann nicht gewinnen – aber oft war der Fold trotzdem richtig, weil die Chance in dem Moment schlecht war.'}</p>`;}
+  if(R.bluffs.length)html+=`<p>🎭 Geblufft: ${R.bluffs.map(b=>`<b>${b.p.name}</b> (${stName[b.stage]})`).join(', ')}. ${R.bluffs.some(b=>actualWinners.has(b.p))?'Der Bluff hat funktioniert!':'Der Bluff ist nicht aufgegangen.'}</p>`;
+
+  const sts=['preflop','flop','turn','river'].filter(s=>R.eq[s]!=null);
+  if(sts.length){
+    html+=`<h4>📈 Deine Gewinnchance im Verlauf</h4><div class="eqbars">`;
+    sts.forEach((s,i)=>{const e=R.eq[s],prev=i?R.eq[sts[i-1]]:null,d=prev==null?'':(e-prev>=0?'▲ +':'▼ ')+Math.round((e-prev)*100)+' Punkte';
+      html+=`<div class="eqrow"><div class="eql">${stName[s]}${s!=='preflop'?`<div class="eqc">${mini(R.boards[s].slice(s==='flop'?0:-1))}</div>`:''}</div><div class="eqb"><div style="width:${Math.max(2,e*100)}%"></div></div><div class="eqv">${pct(e)}<small>${d}</small></div></div>`;});
+    html+=`</div>`;
+    let big=null;for(let i=1;i<sts.length;i++){const d=R.eq[sts[i]]-R.eq[sts[i-1]];if(!big||Math.abs(d)>Math.abs(big.d))big={d,s:sts[i]};}
+    if(big&&Math.abs(big.d)>=0.15){const c=R.boards[big.s][R.boards[big.s].length-1];html+=`<p>${big.d>0?'💚':'💔'} Die größte Wende kam am <b>${stName[big.s]}</b>: ${big.s==='flop'?'Der Flop hat':`Die Karte ${cardStr(c)} hat`} deine Chance um ${Math.round(Math.abs(big.d)*100)} Punkte ${big.d>0?'erhöht':'gesenkt'}. ${big.d>0?'Genau in solchen Momenten lohnt es sich zu setzen.':'So eine Karte hilft wahrscheinlich einem Gegner – ein guter Moment, vorsichtiger zu werden.'}</p>`;}
+    if(me.folded)html+=`<p class="note">Nach deinem Fold (${stName[me.foldStage]}) wird deine Chance nicht mehr berechnet.</p>`;
+  }
+
+  if(R.decisions.length){
+    html+=`<h4>🧭 Deine Entscheidungen</h4>`;
+    R.decisions.forEach(d=>{
+      const po=d.toCall>0?d.toCall/(d.pot+d.toCall):0,evc=d.eq*(d.pot+d.toCall)-d.toCall;
+      const act=d.a.type==='raise'?`Raise auf ${d.a.to}`:d.a.type==='call'?`Call ${d.toCall}`:d.a.type==='check'?'Check':'Fold';
+      let v='good',t='';
+      if(d.a.type==='fold'&&d.toCall===0){v='warn';t='Du hast aufgegeben, obwohl ein Check gratis gewesen wäre. Das kostet nichts, und du siehst die nächste Karte.';}
+      else if(d.a.type==='call'&&d.toCall>0&&d.eq<po){v='warn';t=`Für diesen Call brauchtest du ${pct(po)} Gewinnchance, hattest aber nur ${pct(d.eq)}. Erwartungswert: ${Math.round(evc)} Chips. Auf Dauer verliert man so.`;}
+      else if(d.a.type==='fold'&&d.toCall>0&&d.eq>=po+0.12){v='warn';t=`Der Fold war wohl zu vorsichtig: ${pct(d.eq)} Chance bei nur ${pct(po)} nötig – der Call hätte im Schnitt +${Math.round(evc)} Chips gebracht.`;}
+      else if(d.a.type==='raise'&&d.board.length&&d.eq<0.8/(d.nOpp+1)){v='neutral';t=`Das war ein Bluff (oder Semi-Bluff): nur ${pct(d.eq)} Chance. Kann klappen, wenn die Gegner schwach sind – aber nicht gegen jemanden, der sowieso mitgeht.`;}
+      else if(d.a.type==='fold'){t=`Richtig: ${pct(d.eq)} Chance${d.toCall>0?` bei ${pct(po)} nötig`:''} – lieber sparen.`;}
+      else if(d.a.type==='call'){t=`Passt: ${pct(d.eq)} Chance, nötig waren ${pct(po)}. Erwartungswert +${Math.round(evc)} Chips.`;}
+      else if(d.a.type==='check'){t='Gratis weiterschauen – kostet nichts.';}
+      else{t=`Stark: Mit ${pct(d.eq)} warst du Favorit – Setzen holt Chips von schlechteren Händen.`;}
+      const same=d.rec&&(d.rec.k===d.a.type||(d.rec.k==='check'&&d.a.type==='check'));
+      const coach=d.rec?` · Coach: ${d.rec.a}${same?' ✔':''}`:'';
+      html+=`<div class="dec ${v}"><div class="dec-h"><span>${stName[d.stage]}${d.board.length?` · ${mini(d.board)}`:''}</span><b>${act}</b></div><div class="dec-m">Chance ${pct(d.eq)} · Pot ${d.pot}${d.toCall?` · zu zahlen ${d.toCall} · nötig ${pct(po)}`:''}${coach}</div><div>${v==='good'?'✅':v==='warn'?'⚠️':'🎭'} ${t}</div></div>`;});
+  }
+
+  html+=`<h4>🔮 Was wäre wenn?</h4>`;
+  const myFin=fin.get(me),others=dealt.filter(p=>p!==me);
+  const iWouldWin=others.every(p=>fin.get(p).score<=myFin.score);
+  if(me.folded){
+    const fd=R.decisions.find(d=>d.a.type==='fold');
+    html+=`<p>Wärst du bis zum Ende dabei geblieben, hättest du <b>${myFin.desc}</b> gehabt – ${iWouldWin?'<b>damit hättest du gewonnen</b>':`<b>${others.filter(p=>fin.get(p).score>myFin.score).map(nm).join(' & ')} hätte${others.filter(p=>fin.get(p).score>myFin.score).length>1?'n':''} dich geschlagen</b>`}. ${fd&&fd.toCall>0?`Der Fold hat dich ${fd.toCall} Chips erspart.`:''} ${iWouldWin?'Trotzdem: Lag deine Chance im Moment des Folds unter den Pot Odds, war der Fold richtig – langfristig zählt die Rechnung, nicht der Einzelfall.':'Der Fold war also auch im Nachhinein gut.'}</p>`;
+    html+=`<p class="note">Vereinfachung: Wir tun so, als hätten alle bis zum Showdown weitergespielt und niemand hätte zusätzlich gesetzt.</p>`;
+  }else if(actualWinners.has(me)){
+    const o=R.outcomes.find(o=>!o.returned&&o.winners.includes(me));
+    if(o&&o.noShowdown){const strongest=[...others].sort((a,b)=>fin.get(b).score-fin.get(a).score)[0];html+=`<p>Alle sind ausgestiegen – du musstest deine Karten nicht zeigen. Mit allen fünf Tischkarten hättest du <b>${myFin.desc}</b> gehabt${strongest?`, ${nm(strongest)} dagegen ${fin.get(strongest).desc}`:''}. ${iWouldWin?'Du wärst auch beim Showdown vorne gewesen – Setzen mit der besten Hand nennt man <b>Value Bet</b>.':'Beim Showdown hättest du verloren – dein Druck hat die bessere Hand vertrieben. Genau das ist ein gelungener <b>Bluff</b>!'}</p>`;}
+    else html+=`<p>Du hast beim Showdown gewonnen. Hättest du irgendwo gefoldet, wären dir ${Math.max(0,net)} Chips Gewinn entgangen. ${sts.length?`Am ${stName[sts[0]]} lag deine Chance bei ${pct(R.eq[sts[0]])} – ${R.eq[sts[0]]>=0.5?'du warst von Anfang an Favorit.':'du warst anfangs nicht Favorit; die Karten haben für dich gearbeitet. Glück gehört dazu – entscheidend ist, dass deine Calls rechnerisch gepasst haben.'}`:''}</p>`;
+  }else{
+    const lost=R.startChips-me.chips;
+    const worst=R.decisions.filter(d=>d.toCall>0&&d.a.type==='call').sort((a,b)=>(a.eq*(a.pot+a.toCall)-a.toCall)-(b.eq*(b.pot+b.toCall)-b.toCall))[0];
+    html+=`<p>Du hast <b>${lost} Chips</b> verloren.${worst?` Der teuerste Moment: dein Call über ${worst.toCall} am ${stName[worst.stage]} mit ${pct(worst.eq)} Chance (nötig: ${pct(worst.toCall/(worst.pot+worst.toCall))}). ${worst.eq*(worst.pot+worst.toCall)-worst.toCall>=0?'Rechnerisch war der Call trotzdem in Ordnung – diesmal hat es nicht geklappt. So ist Poker: Du kannst alles richtig machen und trotzdem verlieren.':'Rechnerisch war dieser Call ein Verlustgeschäft. Ohne ihn hättest du '+worst.toCall+' Chips weniger verloren.'}`:' Nur die Blinds – das ist der normale Preis fürs Mitspielen.'}</p>`;
+    const fd=R.decisions.find(d=>d.rec&&d.rec.k==='fold'&&d.a.type!=='fold');
+    if(fd)html+=`<p>Der Coach hatte am ${stName[fd.stage]} zum Fold geraten. Hättest du dort aufgehört, hättest du nur ${R.startChips-fd.chips} Chips verloren statt ${lost}.</p>`;
+  }
+
+  html+=`<h4>🧮 Die Rechnung dieser Hand</h4>`;
+  const dr=R.decisions.find(d=>d.board.length>=3&&d.board.length<5);
+  if(dr){
+    const oi=outsInfo(me.hand,dr.board);
+    html+=`<div class="p">Am <b>${stName[dr.stage]}</b> ${mini(dr.board)} hattest du <b>${oi.cur.desc}</b>${oi.o?` und <b>${oi.o} Outs</b> (Karten, die dich verbessern: ${oi.outs.map(cardStr).join(' ')})`:''}.</div>`;
+    if(oi.o)html+=`<ul class="bullets"><li>Unbekannte Karten: 52 − 2 − ${dr.board.length} = ${oi.u}</li><li>Nächste Karte trifft: ${oi.o} ÷ ${oi.u} = <b>${pctDE(oi.next)}</b></li>${dr.board.length===3?`<li>Bis zum River: 1 − (1 − ${oi.o}/47) × (1 − ${oi.o}/46) = <b>${pctDE(oi.river)}</b> (Faustregel ${oi.o} × 4 = ${oi.o*4} %)</li>`:`<li>Faustregel am Turn: ${oi.o} × 2 = ${oi.o*2} %</li>`}</ul>`;
+    if(dr.toCall>0){const po=dr.toCall/(dr.pot+dr.toCall);html+=`<p>Pot Odds: ${dr.toCall} ÷ (${dr.pot} + ${dr.toCall}) = <b>${pct(po)}</b> nötig. Deine Gesamtchance laut Simulation: <b>${pct(dr.eq)}</b> → ${dr.eq>=po?'der Call lohnt sich rechnerisch.':'der Call lohnt sich rechnerisch nicht.'}</p>`;}
+  }else{
+    const s=startingInfo(me.hand);
+    html+=`<p>Deine Starthand <b>${s.code}</b> (${s.tier}): Von 1.326 möglichen Starthänden ist sie ${s.score>=10?'unter den besten 5 %':s.score>=8?'unter den besten 15 %':s.score>=6?'im oberen Drittel':'in der unteren Hälfte'}. Gegen ${Math.max(1,dealt.length-1)} zufällige Hände gewinnt sie etwa ${pct(R.eq.preflop||0)} – fair wären ${pct(1/dealt.length)}.</p>`;
+  }
+
+  const lessons=[];
+  if(R.decisions.some(d=>d.a.type==='call'&&d.toCall>0&&d.eq<d.toCall/(d.pot+d.toCall)))lessons.push('Vergleiche vor jedem Call: Ist meine Chance größer als die Pot Odds? Nur dann mitgehen.');
+  if(R.decisions.some(d=>d.a.type==='fold'&&d.toCall===0))lessons.push('Nie folden, wenn du checken kannst – gratis ist immer besser.');
+  if(me.folded&&iWouldWin)lessons.push('Ein Fold, der später „falsch“ aussieht, kann trotzdem richtig gewesen sein. Beurteile Entscheidungen nach der Chance im Moment, nicht nach dem Ergebnis.');
+  if(!me.folded&&!actualWinners.has(me)&&(R.eq.preflop??1)<0.15)lessons.push('Schwache Starthände kosten auf Dauer am meisten. Geduld ist die billigste Verbesserung.');
+  if(R.bluffs.length&&me.folded&&R.bluffs.some(b=>actualWinners.has(b.p)))lessons.push(`${R.bluffs[0].p.name} hat dich weggeblufft. Merke dir, wer oft blufft – gegen solche Spieler lohnt sich ein Call mit mittleren Händen öfter.`);
+  if(!lessons.length)lessons.push(actualWinners.has(me)?'Gut gespielt! Setze weiter mit starken Händen und steige mit schwachen günstig aus.':'Nicht jede verlorene Hand ist ein Fehler. Wichtig ist, dass die Rechnung bei deinen Entscheidungen stimmt.');
+  html+=`<h4>💡 Lektion</h4><ul class="bullets">${lessons.map(l=>`<li>${l}</li>`).join('')}</ul>`;
+  html+=`<label class="rv-auto"><input type="checkbox" ${settings.autoReview?'checked':''} onchange="settings.autoReview=this.checked;saveSettings()"> Rückblick nach jeder Hand automatisch zeigen</label>
+  <div class="tnav"><button class="ghost" onclick="closeModal()">Schließen</button><button class="big" style="width:auto;padding:10px 20px" onclick="closeModal();if(G.handOver)startHand()">Nächste Hand ▶</button></div>`;
+  openModal(html);
+}
+
+function showMath(){
+  const f=x=>(x*100).toFixed(1).replace('.',',')+' %';
+  const typ={1:'Sehr selten – eine ganz bestimmte Karte',2:'Paar → Drilling',3:'Eine hohe Karte → Paar',4:'Gutshot (Straße mit Lücke)',6:'Zwei hohe Karten → Paar',8:'Offener Straßen-Draw',9:'Flush-Draw',12:'Flush-Draw + Gutshot',15:'Flush- + offener Straßen-Draw'};
+  const outs=[1,2,3,4,5,6,7,8,9,10,12,15].map(o=>`<tr><td>${o}</td><td>${f(o/47)}</td><td>${f(1-(1-o/47)*(1-o/46))}</td><td>${o*2} % / ${o*4} %</td><td>${typ[o]||''}</td></tr>`).join('');
+  openModal(`<h2>Die Mathe hinterm Poker 🧮</h2>
+  <p>Poker ist kein reines Glücksspiel: Jede Entscheidung lässt sich ausrechnen. Du musst nur drei Dinge verstehen – <b>Outs</b>, <b>Pot Odds</b> und <b>Erwartungswert</b>. Das Spiel rechnet dir alles live vor (Coach → „Rechenweg“), hier steht, was dahintersteckt.</p>
+  <h4>1. Alles beginnt mit 52 Karten</h4>
+  <p>Du kennst immer nur deine 2 Karten und die offenen Tischkarten. Alle anderen sind „unbekannt“ – auch die der Gegner. Für die Rechnung ist es egal, ob eine Karte noch im Stapel liegt oder in Bens Hand.</p>
+  <div class="formula">Unbekannte Karten am Flop = 52 − 2 − 3 = 47</div>
+  <table class="mt"><tr><th>Starthand</th><th>Wie oft bekommst du sie?</th></tr>
+  <tr><td>Ein bestimmtes Paar (z. B. A-A)</td><td><b>0,45 %</b> – etwa alle 221 Hände</td></tr>
+  <tr><td>Irgendein Paar</td><td><b>5,9 %</b> – etwa alle 17 Hände</td></tr>
+  <tr><td>A-K (egal welche Farben)</td><td><b>1,2 %</b></td></tr>
+  <tr><td>Zwei Karten gleicher Farbe (suited)</td><td><b>23,5 %</b></td></tr>
+  <tr><td>Mindestens ein Bube oder höher</td><td><b>~52 %</b></td></tr></table>
+  <h4>2. Was passiert am Flop?</h4>
+  <table class="mt"><tr><th>Du hast …</th><th>Am Flop triffst du …</th><th>Chance</th></tr>
+  <tr><td>Ein Paar (z. B. 8-8)</td><td>Drilling („Set“)</td><td><b>11,8 %</b></td></tr>
+  <tr><td>Zwei verschiedene Karten</td><td>mindestens ein Paar</td><td><b>32,4 %</b></td></tr>
+  <tr><td>Zwei suited Karten</td><td>Flush-Draw (4 von 5)</td><td><b>10,9 %</b></td></tr>
+  <tr><td>Zwei suited Karten</td><td>fertiger Flush</td><td><b>0,8 %</b></td></tr>
+  <tr><td>Zwei suited Karten</td><td>Flush bis zum River</td><td><b>6,4 %</b></td></tr></table>
+  <p>Merke: Du triffst <b>zwei von drei Mal gar nichts</b> am Flop. Das gilt aber genauso für deine Gegner – deshalb gewinnt oft, wer einfach setzt.</p>
+  <h4>3. Outs – wie viele Karten helfen dir?</h4>
+  <div class="p">Ein „Out“ ist eine Karte, die deine Hand entscheidend verbessert. Beispiel: Du hast ${miniS('Ah 9h')}, am Tisch liegen ${miniS('Kh 6h 2c')}. Jede weitere Herzkarte macht deinen Flush – davon gibt es noch 13 − 4 = <b>9 Outs</b>.</div>
+  <div class="formula">Chance nächste Karte = Outs ÷ unbekannte Karten = 9 ÷ 47 = 19 %</div>
+  <div class="formula">Chance bis zum River = 1 − (38 ÷ 47 × 37 ÷ 46) = 35 %</div>
+  <p><b>Faustregel „2 und 4“:</b> Outs × 4 ≈ Chance mit zwei Karten (Flop → River), Outs × 2 ≈ Chance mit einer Karte. Kopfrechnen reicht!</p>
+  <table class="mt"><tr><th>Outs</th><th>Nächste Karte</th><th>Flop → River</th><th>Faustregel</th><th>Typisch für …</th></tr>${outs}</table>
+  <h4>4. Pot Odds – lohnt sich der Call?</h4>
+  <p>Vergleiche, was du <b>zahlst</b>, mit dem, was du <b>gewinnen kannst</b>.</p>
+  <div class="formula">Pot Odds = Call ÷ (Pot + Call)</div>
+  <p>Beispiel: Im Pot sind 100, Ben setzt 50. Du musst 50 zahlen, um 150 + 50 = 200 zu gewinnen: 50 ÷ 200 = <b>25 %</b>. Du musst also in mindestens 25 % der Fälle gewinnen, sonst verlierst du auf Dauer.</p>
+  <p>Mit dem Flush-Draw von oben (35 % bis zum River) ist der Call richtig: <b>35 % &gt; 25 %</b>. Mit einem Gutshot (17 %) wäre er falsch.</p>
+  <h4>5. Erwartungswert (EV) – was bringt es im Schnitt?</h4>
+  <div class="formula">EV = Gewinnchance × Pot danach − Einsatz</div>
+  <p>Flush-Draw-Beispiel: 0,35 × 200 − 50 = <b>+20 Chips</b>. Du wirst diese Hand öfter verlieren als gewinnen – und verdienst trotzdem im Durchschnitt 20 Chips pro Call. Genau das macht gute Spieler aus: Sie treffen Entscheidungen, die <b>über 1.000 Hände</b> Gewinn bringen, nicht solche, die sich jetzt gut anfühlen.</p>
+  <p>Deshalb sagt der Coach manchmal „Call“ – und du verlierst trotzdem. Das war kein Fehler. <b>Poker belohnt richtige Entscheidungen, nicht einzelne Ergebnisse.</b></p>
+  <h4>6. Gewinnchance (Equity)</h4>
+  <p>Die Prozentzahl im Coach ist eine Simulation: Das Spiel teilt 2.200-mal zufällige Karten an die Gegner aus, legt die restlichen Tischkarten und zählt, wie oft du gewinnst. Gegen 4 Gegner sind 20 % „Durchschnitt“ (1 ÷ 5). Liegst du deutlich darüber, bist du Favorit.</p>
+  <p>Vorsicht: Echte Gegner haben keine zufälligen Karten. Wer erhöht, hat meist eine überdurchschnittliche Hand – deine echte Chance ist dann niedriger als die Zahl.</p>
+  <h4>7. Warum Position Geld wert ist</h4>
+  <p>Wer als Letzter handelt, weiß mehr: Er sieht die Checks (= Schwäche) und Bets (= Stärke) der anderen, bevor er entscheidet. Am Button kannst du deshalb mehr Hände spielen; früh dran (links vom Big Blind) solltest du wählerischer sein.</p>
+  <h4>8. Die Rangfolge ist keine Willkür</h4>
+  <p>Je seltener eine Kombination mit 7 Karten vorkommt, desto höher steht sie: Ein Paar bekommst du in 44 % der Hände, einen Flush nur in 3 %, einen Vierling in 0,17 %. Die Liste findest du unter „🏆 Hand-Rangfolge“.</p>`);
+}
 
 /* Handy, Touch & Web-App */
 const TOUCH=matchMedia('(hover:none)').matches;
