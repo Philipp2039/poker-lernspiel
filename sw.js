@@ -1,5 +1,5 @@
 // Offline-Modus: Online immer die neueste Version laden, ohne Netz aus dem Cache spielen.
-const CACHE = 'poker-lernspiel-v5';
+const CACHE = 'poker-lernspiel-v6';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

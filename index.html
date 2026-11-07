@@ -471,6 +471,9 @@ table.sz th,table.sz td{padding:3px 6px}
   <button class="hbtn" id="hRanges">📊<span class="lbl"> Ranges</span></button>
   <button class="hbtn" id="hTrain">🎯<span class="lbl"> Training</span></button>
   <button class="hbtn" id="hStats">📈<span class="lbl"> Statistik</span></button>
+  <select class="hbtn" id="hLevel" title="Spielstärke der Gegner">
+    <option value="easy">🙂 Anfänger</option><option value="normal">🎓 Hobby</option><option value="pro">🏆 Profi</option>
+  </select>
   <select class="hbtn" id="hSpeed" title="Spielgeschwindigkeit">
     <option value="1.6">🐢 Langsam</option><option value="1">▶ Normal</option><option value="0.55">⚡ Schnell</option>
   </select>
@@ -690,7 +693,7 @@ function applyPositions(){
 }
 
 const G={players:[],dealer:-1,board:[],deck:[],pot:0,currentBet:0,minRaise:20,sb:10,bb:20,handNo:0,stage:'',sbI:-1,bbI:-1,resolveHuman:null,revealed:false,handOver:false,stats:{won:0}};
-let settings={speed:1,sound:true,tips:true,autoReview:true,mathOpen:false,hud:true,proOpen:false,showAll:false};
+let settings={speed:1,sound:true,tips:true,autoReview:true,mathOpen:false,hud:true,proOpen:false,showAll:false,level:'normal'};
 try{Object.assign(settings,JSON.parse(localStorage.getItem('pokerLernSettings')||'{}'));}catch(e){}
 const saveSettings=()=>{try{localStorage.setItem('pokerLernSettings',JSON.stringify(settings));}catch(e){}};
 let ff=false;
@@ -1040,7 +1043,7 @@ async function startHand(){
   assignPositions();G.pre={raises:0,limpers:0,raiser:null,callers:[],threeBettor:null};
   G.players.forEach(p=>{if(p.inHand){p.hud.hands++;p.vp=false;p.pf=false;p.b3seen=false;}});
   showArea('act');setControls(false);
-  $('#handInfo').innerHTML=`Hand <b>#${G.handNo}</b> · Blinds <b>10/20</b> · Gewonnen: <b>${G.stats.won}</b>`;
+  renderHandInfo();
   renderAll();renderPositions();
   {const db=$('#dealerBtn');db.classList.remove('spin');void db.offsetWidth;db.classList.add('spin');}
   log(`Hand #${G.handNo}`,'','head');
@@ -1185,16 +1188,31 @@ async function botAct(p){
   const i=idx(p);
   $('#seat'+i).classList.add('thinking');
   $('#ctrlInfo').innerHTML=`<b>${p.name}</b> denkt nach …`;
-  const nOpp=Math.max(1,alive().length-1);
-  const eq=equity(p.hand,G.board,nOpp,G.board.length?420:320);
-  await sleep(650+Math.random()*750);
-  $('#seat'+i).classList.remove('thinking');
-  const s=p.style,toCall=G.currentBet-p.bet,pt=potTotal();
-  const potOdds=toCall>0?toCall/(pt+toCall):0,strength=eq*(nOpp+1);
+  const lvl=settings.level||'normal';
+  const opps=alive().filter(q=>q!==p),nOpp=Math.max(1,opps.length);
+  const toCall=G.currentBet-p.bet,pt=potTotal();
+  const potOdds=toCall>0?toCall/(pt+toCall):0;
   const maxTo=p.bet+p.chips,minTo=Math.min(G.currentBet+G.minRaise,maxTo);
   const othersCanAct=actors().filter(q=>q!==p).length>0;
   const canRaise=maxTo>G.currentBet&&p.raises<2&&othersCanAct;
-  if(G.board.length===0){const r=botPreflop(p,toCall,minTo,maxTo,canRaise);if(r)return r;}
+  const ctx={toCall,pt,potOdds,minTo,maxTo,canRaise,opps,nOpp};
+  let r=null;
+  try{
+    if(G.board.length===0)r=botPreflop(p,toCall,minTo,maxTo,canRaise);
+    if(!r){
+      if(G.board.length>0&&lvl==='easy')r=botEasyPost(p,ctx);
+      else if(G.board.length>0&&lvl==='pro')r=botProPost(p,ctx);
+      else r=botNormalPost(p,ctx);
+    }
+  }catch(e){console.error('Bot-Fehler',e);r=toCall>0?{type:'fold'}:{type:'check'};}
+  await sleep((lvl==='pro'?750:550)+Math.random()*750);
+  $('#seat'+i).classList.remove('thinking');
+  return r;
+}
+/* ---- Stufe „Hobby“: Gewinnchance gegen Zufallshände + Pot Odds ---- */
+function botNormalPost(p,c){
+  const {toCall,pt,potOdds,minTo,maxTo,canRaise,nOpp}=c,s=p.style;
+  const eq=equity(p.hand,G.board,nOpp,G.board.length?420:320),strength=eq*(nOpp+1);
   const wantRaise=canRaise&&strength>=s.raiseAt&&Math.random()<s.aggr+(strength-s.raiseAt)*.4;
   const bluff=!wantRaise&&canRaise&&G.board.length>0&&strength<.9&&Math.random()<s.bluff&&toCall<=pt*.5;
   if(wantRaise||bluff){
@@ -1211,6 +1229,141 @@ async function botAct(p){
   if(eq>=potOdds*s.callMult)return {type:'call'};
   if(strength>=s.callStrength&&toCall<=p.chips*.35)return {type:'call'};
   if(toCall<=Math.max(G.bb,p.chips*.04)&&strength>=s.callStrength*.75)return {type:'call'};
+  return {type:'fold'};
+}
+/* ---- Hand-Klasse relativ zum Board (nur eigene Karten + Board) ---- */
+function quickClass(hole,board){
+  const all=[...hole,...board],ev=evaluate(all),cat=ev.cat;
+  const br=board.map(c=>c.r).sort((a,b)=>b-a),bh=br[0],second=br[1]||0;
+  const pocket=hole[0].r===hole[1].r,kicker=Math.max(hole[0].r,hole[1].r);
+  const pairRank=cat===1?ev.cards[0].r:0;
+  const boardPair=new Set(br).size<board.length;
+  const overpair=pocket&&cat===1&&hole[0].r>bh;
+  const topPair=cat===1&&!pocket&&pairRank===bh&&hole.some(c=>c.r===bh);
+  const midPair=cat===1&&!overpair&&!topPair&&hole.some(c=>c.r===pairRank);
+  let outs=0,fd=false;
+  if(board.length<5){
+    const suits=[0,0,0,0];all.forEach(c=>suits[c.s]++);
+    fd=cat<5&&suits.some((n,su)=>n===4&&hole.some(c=>c.s===su));
+    if(fd)outs+=9;
+    if(cat<4){const used=new Set(all.map(cid));let so=0;
+      for(let r=2;r<=14;r++){let c=null;for(let su=0;su<4;su++){const x={r,s:su};if(!used.has(cid(x))){c=x;break;}}if(!c)continue;
+        if(evaluate([...all,c]).cat===4)so+=4-all.filter(x=>x.r===r).length;}
+      outs+=fd?Math.round(so*.75):so;}
+  }
+  let tier=0; // 4 Monster · 3 stark · 2 mittel/starker Draw · 1 schwach · 0 Luft
+  if(cat>=3||(cat===2&&!boardPair))tier=4;
+  else if(cat===2||overpair||(topPair&&kicker>=11))tier=3;
+  else if(topPair||midPair||(pocket&&cat===1&&hole[0].r>=second)||outs>=8)tier=2;
+  else if(cat===1||outs>=4||(kicker===14&&board.length===3))tier=1;
+  return {cat,tier,outs,fd,topPair,overpair,midPair,pairRank,kicker,boardPair,ev};
+}
+function lastToAct(){let k=G.dealer;for(let c=0;c<N;c++){if(inHand(G.players[k]))return G.players[k];k=(k-1+N)%N;}return null;}
+function streetBettor(){if(G.currentBet<=0)return null;return G.players.find(q=>inHand(q)&&q.bet===G.currentBet&&q.acted)||null;}
+function oppProfile(q){
+  const h=q.hud;if(!h||h.hands<8)return {v:28,f:18,ar:1,n:0,station:false,nit:false,maniac:false};
+  const v=hudPct(h.vpip,h.hands),f=hudPct(h.pfr,h.hands),ar=h.calls?h.agg/h.calls:(h.agg?3:1);
+  return {v,f,ar,n:h.hands,station:v>=42&&ar<.8,nit:v<=17,maniac:v>=35&&f>=25&&ar>=2};
+}
+/* ---- Stufe „Anfänger“: denkt nur in absoluter Handstärke, callt zu viel ---- */
+function botEasyPost(p,c){
+  const {toCall,pt,minTo,maxTo,canRaise}=c,board=G.board,my=quickClass(p.hand,board),rnd=Math.random();
+  const bet=to=>{to=Math.round(to/5)*5;to=Math.max(minTo,Math.min(maxTo,to));if(to>=maxTo*.85)to=maxTo;p.raises++;return {type:'raise',to,bluff:my.tier<=1};};
+  const sz=()=>Math.random()<.4?minTo:G.currentBet+(pt+toCall)*(.3+Math.random()*.5);
+  const frac=toCall/Math.max(1,pt-toCall);
+  if(toCall===0){
+    if(!canRaise)return {type:'check'};
+    if(my.tier===4)return rnd<.8?bet(sz()):{type:'check'};
+    if(my.tier===3)return rnd<.65?bet(sz()):{type:'check'};
+    if(my.tier===2&&my.cat>=1)return rnd<.35?bet(minTo):{type:'check'};
+    if(my.outs>=4&&rnd<.15)return bet(minTo);
+    if(rnd<.05)return bet(sz());
+    return {type:'check'};
+  }
+  if(my.tier===4)return canRaise&&rnd<.6?bet(G.currentBet*(2+Math.random()*2)):{type:'call'};
+  if(my.tier===3){if(canRaise&&rnd<.25)return bet(G.currentBet*2.5);return {type:'call'};}
+  if(my.tier===2){if(my.outs>=8)return {type:'call'};if(frac<=1||toCall<=p.chips*.25)return {type:'call'};return rnd<.3?{type:'call'}:{type:'fold'};}
+  if(my.tier===1){if(my.outs>=4&&frac<=1.2)return {type:'call'};if(frac<=.4&&rnd<.5)return {type:'call'};if(my.cat===1&&frac<=.7&&rnd<.5)return {type:'call'};return {type:'fold'};}
+  if(frac<=.3&&rnd<.3)return {type:'call'};
+  return {type:'fold'};
+}
+/* ---- Stufe „Profi“: Ranges, Board-Textur, Position, MDF, Gegnertyp – nie fremde Karten ---- */
+function botProPost(p,c){
+  const {toCall,pt,potOdds,minTo,maxTo,canRaise,opps}=c,board=G.board,street=board.length;
+  const s=p.style,my=quickClass(p.hand,board),tex=boardTexture(board)||{kind:'mittel',maxS:0};
+  const ip=lastToAct()===p,pre=G.pre||{},agg=pre.threeBettor===p||(pre.raiser===p&&!pre.threeBettor),bettor=streetBettor();
+  const multi=opps.length>=2,spr=pt>0?p.chips/pt:99;
+  // Gegner-Ranges aus Verhalten + HUD; wer auf dieser Straße gesetzt hat, hat meist etwas getroffen
+  const rs=opps.map(q=>{const r=oppRange(q);const set=r.set||topSet(q.pos==='BB'?.85:.6);const cond=(bettor===q)?(h=>quickClass(h,board).tier>=1):null;return {set,cond};});
+  const eq=equityVsRanges(p.hand,board,rs,street===5?500:400);
+  const target=opps.length===1?opps[0]:(opps.find(q=>q.isHuman)||opps[0]),prof=oppProfile(target);
+  let fe=.45;if(prof.nit)fe+=.15;if(prof.station)fe-=.3;if(prof.maniac)fe-=.1;if(multi)fe-=.15*(opps.length-1);if(agg)fe+=.08;if(ip)fe+=.05;if(tex.kind==='nass')fe-=.08;fe=Math.max(.05,Math.min(.8,fe));
+  const aggr=.6+s.aggr*.6,bl=s.bluff*2.5,rnd=Math.random(),feM=fe/.45;
+  const raiseTo=x=>{let to=Math.round(x/5)*5;to=Math.max(minTo,Math.min(maxTo,to));if(to>=maxTo*.85)to=maxTo;p.raises++;return {type:'raise',to,bluff:my.tier<=1};};
+  const betTo=frac=>{let to=G.currentBet+(pt+toCall)*frac;if(spr<1.3&&my.tier>=3)to=maxTo;return raiseTo(to);};
+  const scary=street>=4&&(tex.maxS>=3||tex.kind==='nass');
+  if(toCall===0){
+    if(!canRaise)return {type:'check'};
+    if(my.tier===4){
+      if(street<5&&tex.kind==='trocken'&&!multi&&(prof.maniac||prof.ar>1.5)&&rnd<.45)return {type:'check'}; // Slowplay gegen Aggressive
+      return betTo(tex.kind==='nass'?.75:(street===5?.7:.55));
+    }
+    if(my.tier===3){
+      if(street===5&&prof.nit&&rnd<.35)return {type:'check'};
+      return betTo(prof.station?.75:tex.kind==='nass'?.66:.5);
+    }
+    if(my.tier===2){
+      if(my.outs>=8&&street<5)return rnd<.5*aggr+fe*.3?betTo(.6):{type:'check'}; // Semi-Bluff
+      if(agg&&ip&&street===3&&rnd<.6)return betTo(.33);
+      if(street===5&&ip&&prof.station&&rnd<.4)return betTo(.33); // dünne Value gegen Calling Station
+      return {type:'check'};
+    }
+    if(my.tier===1){
+      if(agg&&street===3&&tex.kind==='trocken'&&rnd<.65*feM)return betTo(.33);
+      if(my.outs>=4&&street<5&&rnd<.25*aggr)return betTo(.5);
+      if(street===5&&!multi&&fe>=.4&&rnd<.15*bl)return betTo(.7);
+      return {type:'check'};
+    }
+    if(agg&&street===3&&!multi&&rnd<(tex.kind==='trocken'?.6:.3)*feM)return betTo(.33); // C-Bet
+    if(agg&&street===4&&scary&&!multi&&rnd<.35*feM)return betTo(.66);
+    if(street===5&&!multi&&fe>=.4&&rnd<.2*bl*feM)return betTo(.7);
+    if(!agg&&!multi&&ip&&rnd<.12*bl*feM)return betTo(.5);
+    return {type:'check'};
+  }
+  // Gegen einen Einsatz
+  const prevPot=Math.max(1,pt-toCall),frac=toCall/prevPot,mdf=1-frac/(1+frac),big=toCall>=p.chips*.6;
+  if(my.tier===4){
+    if(!canRaise||(street<5&&tex.kind==='trocken'&&ip&&rnd<.4))return {type:'call'};
+    return raiseTo(spr<2||big?maxTo:G.currentBet*3);
+  }
+  if(my.tier===3){
+    if(big)return eq>=potOdds+.05?{type:'call'}:{type:'fold'};
+    if(street===5&&frac>=1&&prof.nit&&rnd<.5)return {type:'fold'};
+    if(street===5&&frac>=1.5&&!prof.station&&!prof.maniac&&rnd<.4)return {type:'fold'};
+    if(canRaise&&street<5&&tex.kind==='nass'&&rnd<.35)return raiseTo(G.currentBet*3); // Schutz-Raise
+    return {type:'call'};
+  }
+  if(my.tier===2){
+    if(my.outs>=8&&street<5){
+      if(canRaise&&!multi&&fe>=.4&&spr>2.5&&rnd<.3*aggr)return raiseTo(G.currentBet*3); // Semi-Bluff-Raise
+      return eq>=potOdds*(street===3?.85:1)?{type:'call'}:{type:'fold'}; // Implied Odds am Flop
+    }
+    if(big||(multi&&frac>.5))return {type:'fold'};
+    if(street===5){ // Bluff-Catcher: je nach Gegnertyp
+      const cr=(prof.maniac||prof.ar>1.8)?.8:prof.station?.35:prof.nit?.2:.5;
+      if(frac<=.35)return {type:'call'};
+      return rnd<cr*mdf?{type:'call'}:{type:'fold'};
+    }
+    return (frac<=.66||eq>=potOdds+.08)?{type:'call'}:{type:'fold'};
+  }
+  if(my.tier===1){
+    if(my.outs>=4&&street<5&&eq>=potOdds*1.1)return {type:'call'};
+    if(street<5&&frac<=.35&&!multi&&rnd<.45)return {type:'call'};
+    if(canRaise&&!multi&&ip&&street===3&&frac<=.5&&tex.kind==='trocken'&&rnd<.1*bl*feM)return raiseTo(G.currentBet*3);
+    return {type:'fold'};
+  }
+  if(canRaise&&!multi&&street===3&&frac<=.5&&tex.kind==='trocken'&&fe>=.45&&rnd<.08*bl)return raiseTo(G.currentBet*3); // Bluff-Raise
+  if(eq>=potOdds+.1&&frac<=.4)return {type:'call'};
   return {type:'fold'};
 }
 
@@ -1369,7 +1522,7 @@ async function finishHand(){
   renderHUD();
   // Ausgeschiedene Spieler
   G.players.forEach((p,i)=>{if(!p.isHuman&&p.chips<=0&&p.inHand){p.inHand=false;log(`💀 <b>${p.name}</b> hat keine Chips mehr und scheidet aus.`);renderSeat(i);}});
-  $('#handInfo').innerHTML=`Hand <b>#${G.handNo}</b> · Blinds <b>10/20</b> · Gewonnen: <b>${G.stats.won}</b>`;
+  renderHandInfo();
   setControls(false);$('#ffBtn').classList.add('hidden');
   renderPhase();renderHandBox();$('#oddsBox').classList.add('hidden');$('#mcoach').classList.remove('show');
   tableEl.querySelectorAll('.card.hl').forEach(c=>c.classList.remove('hl'));
@@ -1397,7 +1550,7 @@ const SLIDES=[
     <p>Gewinne Chips! Das geht auf zwei Wegen:</p>
     <ol><li>Du hast am Ende die <b>beste Hand</b> (beim „Showdown“).</li><li>Alle anderen <b>steigen aus</b>, weil du so überzeugend setzt – auch wenn deine Karten eigentlich schlecht sind. Das ist ein <b>Bluff</b>.</li></ol>
     <h4>Deine Gegner</h4>
-    <div class="botlist">${BOT_DEFS.map(b=>`<div><div class="avatar" style="--c:${b.color};width:30px;height:30px">${b.name[0]}</div><div><b>${b.name} – ${b.title}</b><br>${b.desc}</div></div>`).join('')}</div>`,
+    <div class="botlist">${BOT_DEFS.map(b=>`<div><div class="avatar" style="--c:${b.color};width:30px;height:30px">${b.name[0]}</div><div><b>${b.name} – ${b.title}</b><br>${b.desc}</div></div>`).join('')}</div>`+`<h4>Gegner-Stärke (oben wählbar)</h4>${['easy','normal','pro'].map(k=>`<p><b>${LEVEL_INFO[k].e} ${LEVEL_INFO[k].n}:</b> ${LEVEL_INFO[k].t} <i>${LEVEL_INFO[k].tip}</i></p>`).join('')}<p class="note">Auf keiner Stufe kennen die Gegner deine Karten – sie sehen nur Board, Einsätze und deine Statistik, genau wie ein Mensch am Tisch.</p>`,
   ()=>`<h2>Die Karten 🃏</h2>
     <p>Gespielt wird mit <b>52 Karten</b>: 4 Farben mit je 13 Werten.</p>
     <p>Farben: ♠ Pik, ♥ Herz, ♦ Karo, ♣ Kreuz. <b>Alle Farben sind gleich viel wert</b> – sie zählen nur, wenn du 5 Karten einer Farbe hast (Flush).</p>
@@ -1558,6 +1711,10 @@ $('#hStats').onclick=()=>showStats();
 $('#reviewBtn').onclick=showReview;
 $('#hNew').onclick=()=>{if(confirm('Wirklich ein neues Spiel starten? Der aktuelle Stand geht verloren.')){try{sessionStorage.setItem('pokerLernRestart','1');}catch(e){}location.reload();}};
 const spd=$('#hSpeed');spd.value=String(settings.speed);if(!spd.value){spd.value='1';settings.speed=1;}
+const lvS=$('#hLevel');lvS.value=settings.level||'normal';if(!lvS.value){lvS.value='normal';settings.level='normal';}
+function setLevel(v,announce=true){settings.level=v;saveSettings();lvS.value=v;renderHandInfo();if(announce){const L=lvlInfo();log(`${L.e} Gegner-Stärke: <b>${L.n}</b> (gilt ab sofort).`,L.t+' '+L.tip);$('#ctrlInfo').innerHTML=`${L.e} Gegner spielen jetzt auf Stufe <b>${L.n}</b>.`;}}
+lvS.onchange=()=>setLevel(lvS.value);
+function renderHandInfo(){const L=lvlInfo();$('#handInfo').innerHTML=`Hand <b>#${G.handNo}</b> · Blinds <b>10/20</b> · Gewonnen: <b>${G.stats.won}</b> · Gegner: <b>${L.e} ${L.n}</b>`;}
 spd.onchange=()=>{settings.speed=+spd.value;saveSettings();};
 const tips=$('#hTips');const syncTips=()=>tips.classList.toggle('on',settings.tips);syncTips();
 tips.onclick=()=>{settings.tips=!settings.tips;saveSettings();syncTips();if(G.resolveHuman)updateCoach(true);};
@@ -1849,7 +2006,7 @@ function equityVsRanges(hole,board,opps,iters){
   const deck=newDeck().filter(c=>!used.has(cid(c)));
   const needB=5-board.length;
   // Alle Kombinationen jeder Range, die mit den bekannten Karten noch möglich sind
-  const combos=opps.map(o=>{if(!o.set||!o.set.size)return null;const L=[];for(let i=0;i<deck.length;i++)for(let j=i+1;j<deck.length;j++)if(o.set.has(handCode(deck[i],deck[j])))L.push([deck[i],deck[j]]);return L.length?L:null;});
+  const combos=opps.map(o=>{if(!o.set||!o.set.size)return null;const L=[];for(let i=0;i<deck.length;i++)for(let j=i+1;j<deck.length;j++)if(o.set.has(handCode(deck[i],deck[j]))&&(!o.cond||o.cond([deck[i],deck[j]])))L.push([deck[i],deck[j]]);return L.length?L:null;});
   let won=0;
   for(let it=0;it<iters;it++){
     const taken=new Set(),hands=[];
@@ -1882,18 +2039,47 @@ function rangeDesc(){const me=G.players[0],opps=alive().filter(p=>p!==me);const 
 
 /* ---- Bots: Preflop nach Position & Range ---- */
 function botPreflop(p,toCall,minTo,maxTo,canRaise){
-  const s=p.style,code=codeOf(p),pos=p.pos,pr=G.pre,rk=HAND_RANK[code].to,R=RANGES[rangeKey(pos)];
-  const mul=s.rangeMul||1,size=x=>{x=Math.round(x/5)*5;x=Math.max(minTo,Math.min(maxTo,x));return x>=maxTo*.85?maxTo:x;};
+  const lvl=settings.level||'normal',s=p.style,code=codeOf(p),pos=p.pos,pr=G.pre,rk=HAND_RANK[code].to,R=RANGES[rangeKey(pos)];
+  let mul=s.rangeMul||1;if(lvl==='easy')mul*=1.9;if(lvl==='pro')mul=Math.max(.85,Math.min(1.2,mul));
+  const size=x=>{x=Math.round(x/5)*5;x=Math.max(minTo,Math.min(maxTo,x));return x>=maxTo*.85?maxTo:x;};
   const raise=to=>{p.raises++;return {type:'raise',to:size(to)};};
+  const openSize=()=>lvl==='easy'?(Math.random()<.35?G.bb*2:G.bb*(3+Math.random()*4)):lvl==='pro'?G.bb*2.5+G.bb*pr.limpers:G.bb*(2.5+Math.random()*1)+G.bb*pr.limpers;
+  const ip=pos==='BTN'||pos==='CO';
   if(pr.raises===0){
     const openP=(R.pct||0)/100*mul;
-    if(pos==='BB'&&toCall===0){if(pr.limpers&&canRaise&&rk<=0.1*mul&&Math.random()<.8)return raise(G.bb*(3+pr.limpers));return {type:'check'};}
-    if(canRaise&&rk<=openP&&Math.random()<.92)return raise(G.bb*(2.5+Math.random()*1)+G.bb*pr.limpers);
-    if(s.limp&&rk<=Math.min(.6,openP*1.8)&&toCall<=G.bb)return {type:'call'};
-    if(canRaise&&Math.random()<s.bluff*.3)return raise(G.bb*3);
+    if(pos==='BB'&&toCall===0){if(pr.limpers&&canRaise&&rk<=0.1*mul&&Math.random()<(lvl==='easy'?.3:.8))return raise(G.bb*(3+pr.limpers));return {type:'check'};}
+    if(lvl==='easy'){ // Anfänger: limpt viel, erhöht nur mit Top-Händen, Größen willkürlich
+      if(canRaise&&rk<=0.09&&Math.random()<.8)return raise(openSize());
+      if(rk<=Math.min(.75,openP)&&toCall<=G.bb)return {type:'call'};
+      if(canRaise&&Math.random()<.04)return raise(openSize());
+      return toCall===0?{type:'check'}:{type:'fold'};
+    }
+    if(canRaise&&rk<=openP&&Math.random()<(lvl==='pro'?.97:.92))return raise(openSize());
+    if(lvl!=='pro'&&s.limp&&rk<=Math.min(.6,openP*1.8)&&toCall<=G.bb)return {type:'call'};
+    if(canRaise&&Math.random()<s.bluff*.3*(lvl==='pro'?.5:1))return raise(openSize());
     return toCall===0?{type:'check'}:{type:'fold'};
   }
+  const raiser=pr.raiser,rh=raiser?hudAdj(raiser):null;
   if(pr.raises===1){
+    if(lvl==='easy'){
+      if(canRaise&&rk<=0.02&&Math.random()<.6)return raise(G.currentBet*(2+Math.random()*2));
+      const callP=Math.min(.7,((R.pct||25)/100*1.4+(pos==='BB'?.2:0))*mul);
+      if(rk<=callP&&toCall<=p.chips*.35)return {type:'call'};
+      if(rk<=0.05)return {type:'call'};
+      return {type:'fold'};
+    }
+    if(lvl==='pro'){ // Profi: 3-Bet-Range nach Erhöher (Position + HUD), BB-Verteidigung nach Raise-Größe
+      const rpos=raiser?rangeKey(raiser.pos||'CO'):'CO',rpct=(rh?Math.max(8,Math.min(60,rh.f*1.3)):(RANGES[rpos].pct||25))/100;
+      const threeP=Math.max(.035,Math.min(.13,rpct*.35));
+      const bluff3=ip&&!pr.callers.length&&rpct>.3&&Math.random()<.5*(s.aggr+.4)&&/^(A[2-5]s|K[9T]s|[5-9][4-8]s)$/.test(code);
+      if(canRaise&&(rk<=threeP||bluff3)&&Math.random()<.9)return raise(G.currentBet*((ip?3:4)+(pr.callers.length?1:0)));
+      const raiseBB=G.currentBet/G.bb;
+      const callP=pos==='BB'?(raiseBB<=2.5?.42:raiseBB<=3.5?.3:.2):Math.max(.06,Math.min(.2,rpct*.5));
+      if(pr.callers.length&&rk<=callP*1.3&&toCall<=p.chips*.15)return {type:'call'};
+      if(rk<=callP&&toCall<=p.chips*.2)return {type:'call'};
+      if(rk<=0.03&&toCall<=p.chips*.4)return {type:'call'};
+      return {type:'fold'};
+    }
     const threeP=0.04*mul*(s.aggr+.6),callP=(pos==='BB'?.25:Math.max(.06,(R.pct||25)/100*.6))*mul;
     if(canRaise&&rk<=threeP&&Math.random()<.85)return raise(G.currentBet*(pr.callers.length?3.5:3));
     if(rk<=callP&&toCall<=p.chips*.25)return {type:'call'};
@@ -1902,11 +2088,25 @@ function botPreflop(p,toCall,minTo,maxTo,canRaise){
     if(canRaise&&Math.random()<s.bluff*.35)return raise(G.currentBet*3);
     return {type:'fold'};
   }
+  // Schon 3-Bet (oder mehr)
+  if(lvl==='easy'){if(rk<=0.02&&canRaise&&Math.random()<.5)return raise(G.currentBet*2.5);if(rk<=0.08&&toCall<=p.chips*.4)return {type:'call'};return {type:'fold'};}
+  if(lvl==='pro'){
+    if(SETS.cont.has(code)&&canRaise&&(rk<=0.01||Math.random()<.5))return raise(toCall>=p.chips*.35?maxTo:G.currentBet*2.3);
+    if(SETS.cont.has(code))return {type:'call'};
+    if(rk<=0.04&&toCall<=p.chips*.25)return {type:'call'};
+    return {type:'fold'};
+  }
   if(rk<=0.015*mul&&canRaise&&Math.random()<.7)return raise(G.currentBet*2.3);
   if(rk<=0.04*mul&&toCall<=p.chips*.3)return {type:'call'};
   if(s.limp&&rk<=0.1&&toCall<=p.chips*.15)return {type:'call'};
   return {type:'fold'};
 }
+const LEVEL_INFO={
+  easy:{n:'Anfänger',e:'🙂',t:'Die Gegner spielen wie typische Einsteiger: viel zu viele Hände, limpen statt zu erhöhen, gehen mit jedem Paar und jedem Draw mit, folden Top Pair praktisch nie und bluffen nur zufällig. Setz-Größen sind willkürlich (oft Min-Bets).',tip:'So gewinnst du: enge Starthände, mit guten Händen dick setzen (sie zahlen), nie bluffen.'},
+  normal:{n:'Hobby',e:'🎓',t:'Solide Freizeitspieler: öffnen nach Position, denken in Gewinnchance und Pot Odds, haben aber feste Muster – kein Slowplay, kaum Check-Raise, keine Anpassung an dich. Jeder Bot behält seine Persönlichkeit.',tip:'So gewinnst du: tight-aggressiv nach Chart, Spielertypen über das HUD ausnutzen.'},
+  pro:{n:'Profi',e:'🏆',t:'Die Gegner denken in Ranges: Aus deinen Aktionen und deiner Statistik (VPIP, PFR, Aggression) schätzen sie, was du haben kannst – deine Karten sehen sie nie. Sie c-betten je nach Board-Textur, semi-bluffen mit Draws, slowplayen Monster gegen Aggressive, check-raisen, bluff-catchen am River je nach Gegnertyp, verteidigen nach MDF und 3-betten auch mal als Bluff. Gegen einen Nit bluffen sie mehr, gegen eine Calling Station nie.',tip:'So gewinnst du: Balance halten – nicht zu oft folden (sie bluffen), nicht zu viel callen (sie value-betten), Position nutzen.'},
+};
+const lvlInfo=()=>LEVEL_INFO[settings.level]||LEVEL_INFO.normal;
 
 /* ---- HUD (wie PokerTracker / Hold'em Manager) ---- */
 const newHud=()=>({hands:0,vpip:0,pfr:0,b3o:0,b3:0,agg:0,calls:0,flop:0,sd:0,wsd:0});
@@ -2071,6 +2271,7 @@ function showStats(){
   html+=`<h4>🎯 Lernziele</h4>${goalsHTML()}
   <h4>⚙️ Einstellungen</h4><div class="toggles">
   <label><input type="checkbox" ${settings.hud?'checked':''} onchange="settings.hud=this.checked;saveSettings();renderHUD()"> HUD (Gegner-Statistik) am Tisch anzeigen</label>
+  <div style="margin:4px 0 8px"><b style="font-size:13.5px">Gegner-Stärke:</b> ${['easy','normal','pro'].map(k=>`<label style="display:inline-flex;margin:4px 10px 0 0"><input type="radio" name="lvl" value="${k}" ${settings.level===k?'checked':''} onchange="setLevel('${k}')"> ${LEVEL_INFO[k].e} ${LEVEL_INFO[k].n}</label>`).join('')}<div class="note" style="margin-top:4px">${lvlInfo().t}</div></div>
   <label><input type="checkbox" ${settings.showAll?'checked':''} onchange="settings.showAll=this.checked;saveSettings();$('#hEyes').classList.toggle('on',settings.showAll);applyXray()"> Gegner-Karten offen zeigen (Lernmodus 👁)</label>
   <label><input type="checkbox" ${settings.autoReview?'checked':''} onchange="settings.autoReview=this.checked;saveSettings()"> Rückblick nach jeder Hand automatisch öffnen</label>
   <label><input type="checkbox" ${settings.tips?'checked':''} onchange="settings.tips=this.checked;saveSettings();$('#hTips').classList.toggle('on',settings.tips)"> Coach-Empfehlungen anzeigen</label></div>
