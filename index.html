@@ -690,7 +690,7 @@ function applyPositions(){
 }
 
 const G={players:[],dealer:-1,board:[],deck:[],pot:0,currentBet:0,minRaise:20,sb:10,bb:20,handNo:0,stage:'',sbI:-1,bbI:-1,resolveHuman:null,revealed:false,handOver:false,stats:{won:0}};
-let settings={speed:1,sound:true,tips:true,autoReview:true,mathOpen:false,hud:true,proOpen:false,showAll:true};
+let settings={speed:1,sound:true,tips:true,autoReview:true,mathOpen:false,hud:true,proOpen:false,showAll:false};
 try{Object.assign(settings,JSON.parse(localStorage.getItem('pokerLernSettings')||'{}'));}catch(e){}
 const saveSettings=()=>{try{localStorage.setItem('pokerLernSettings',JSON.stringify(settings));}catch(e){}};
 let ff=false;
